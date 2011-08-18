@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script type="text/javascript" src="scripts/jquery-1.4.4.min.js"></script>
+    <script type="text/javascript" src="scripts/do.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        Do.add('map', {path: 'scripts/dui.map.js', type: 'js'});
+    </script>
+    <style type="text/css" media="screen">
+        .map{margin-top:20px;}
+    </style>
+    <title>dui.map</title>
+</head>
+<body>
+    <div id="map-1" class="map"></div>
+    <div id="map-2" class="map"></div>
+    <div id="map-3" class="map"></div>
+    <script type="text/javascript" charset="utf-8">
+        Do('map', function(){
+            function callback(map){
+                console.log('callback');
+                console.log(map);
+                var marker = dui.iMap.createMarker(map, {clickable: true, handleClick: function(){alert('got milk?')}});
+            }
+            var map1 = dui.iMap.init($('div#map-1'), callback);
+
+            var map2 = dui.iMap.createMap($('div#map-2'));
+            dui.iMap.createMarker(map2);
+            dui.iMap.bind(map2, 'click', function(e){
+                dui.iMap.createMarker(map2, {latLng: e.latLng});
+                dui.iMap.setCenter(map2, {latLng: e.latLng});
+            });
+
+            var map3 = dui.iMap.createMap($('div#map-3'));
+            dui.iMap.createMarker(map3, {draggable: true, handleDrag: function(e){console.log(e)}});
+        });
+    </script>
+</body>
+</html>
