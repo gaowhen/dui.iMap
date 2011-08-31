@@ -1,77 +1,61 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
 <head>
-  <meta charset='utf-8'>
-
-  <title>gaowhen/dui.iMap @ GitHub</title>
-
-  <style type="text/css">
-    body {
-      margin-top: 1.0em;
-      background-color: #0e1546;
-      font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #ffffff;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-    h1 { font-size: 3.8em; color: #f1eab9; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #f1eab9; }
-    h3 { text-align: center; color: #f1eab9; }
-    a { color: #f1eab9; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="style/map.css" />
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false&language=cn&region=CN"></script>
+    <script type="text/javascript" src="scripts/jquery-1.4.4.min.js"></script>
+    <script type="text/javascript" src="scripts/do.min.js" data-cfg-autoload="false"></script>
+    <script type="text/javascript" charset="utf-8">
+        Do.add('jquery-ui', {path: 'scripts/jquery-ui-1.8.16.custom.min.js', type: 'js'});
+        Do.add('map', {path: 'scripts/dui.map.js', type: 'js', requires: ['jquery-ui']});
+    </script>
+    <style type="text/css" media="screen">
+        .map{margin-top:20px;}
+    </style>
+    <title>dui.map</title>
 </head>
-
 <body>
-  <a href="http://github.com/gaowhen/dui.iMap"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
-
-  <div id="container">
-
-    <div class="download">
-      <a href="http://github.com/gaowhen/dui.iMap/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/gaowhen/dui.iMap/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
-    </div>
-
-    <h1><a href="http://github.com/gaowhen/dui.iMap">dui.iMap</a>
-      <span class="small">by <a href="http://github.com/gaowhen">gaowhen</a></span></h1>
-
-    <div class="description">
-      google map jquery
-    </div>
-
-    <h2>Authors</h2>
-<p>Miko Gao (gaowhen.com@gmail.com)<br/><br/>      </p>
-<h2>Contact</h2>
-<p>Miko Gao (gaowhen.com@gmail.com)<br/>      </p>
+    <h3>map 1</h3>
+    <div id="map-1" class="map"></div>
+    <h3>map 2</h3>
+    <div id="map-2" class="map"></div>
+    <h3>map 3</h3>
+    <div id="map-3" class="map"></div>
+    <h3>map 4</h3>
+    <div id="map-4" class="map"></div>
+    <script type="text/javascript" charset="utf-8">
+        Do('map', function(){
+            function callback(map){
+                console.log('callback');
+                console.log(map);
+                var marker = dui.iMap.createMarker(map, {clickable: true, handleClick: function(){alert('got milk?')}});
+            }
+            var map1 = dui.iMap.init($('div#map-1'), callback);
 
 
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/gaowhen/dui.iMap/zipball/master">zip</a> or
-      <a href="http://github.com/gaowhen/dui.iMap/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/gaowhen/dui.iMap</pre>
-    </p>
+            var map2 = dui.iMap.createMap($('div#map-2'));
+            dui.iMap.createMarker(map2);
+            dui.iMap.bind(map2, 'click', function(e){
+                dui.iMap.createMarker(map2, {latLng: e.latLng});
+                //dui.iMap.setCenter(map2, {latLng: e.latLng});
+            });
 
-    <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/gaowhen/dui.iMap">gaowhen/dui.iMap</a>
-    </div>
+            var map3 = dui.iMap.createMap($('div#map-3')),
+                marker3 = dui.iMap.createMarker(map3, {draggable: true, handleDrag: function(e){console.log(e)}}),
+                content = '<div>hello world! <a href="#" id="btn-click">click</a></div>';
 
-  </div>
+            dui.iMap.infowindow(map3, marker3, content);
+            $('#btn-click').live('click', function(){
+                alert('whatever');
 
-  
+                return false;
+            });
+
+
+            var map4 = dui.iMap.createMap($('div#map-4'), {searchControl: true});
+
+        });
+    </script>
 </body>
 </html>
