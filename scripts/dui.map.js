@@ -56,7 +56,8 @@
 			lng: mapDefault.lng,
 			latLng: function(){ return new google.maps.LatLng(mapDefault.lat, mapDefault.lng) }()
 		},
-		defaults = $.extend(mapDefault, controlDefault);
+		defaults = $.extend(mapDefault, controlDefault),
+        markers = [];
 
 		function _setCenter(map, options) {
 			var opt = $.extend(centerDefault, options || {});
@@ -134,6 +135,8 @@
 				google.maps.event.addListener(marker, 'click', opt.handleClick);
 			}
 
+            markers.push(marker);
+
 			return marker;
 		}
 
@@ -184,10 +187,44 @@
                 _search(map, address);
             });
 
-            $txt.bind('keydown', function(e){
-                if(e.keyCode == '13'){
-                    var address = $txt.val();
-                    _search(map, address);
+//            $txt.bind('keydown', function(e){
+//                if(e.keyCode == '13'){
+//                    var address = $txt.val();
+//                    _search(map, address);
+//                }
+//            });
+
+            dui.log($txt);
+            $txt.autocomplete({
+                source: function(request, response) {
+                    dui.log('source');
+                    dui.log(request);
+                    var geocoder = new google.maps.Geocoder();
+
+                    geocoder.geocode( {'address': request.term }, function(results, status) {
+                        dui.log(results);
+                        response($.map(results, function(item) {
+                            return {
+                                label:  item.formatted_address,
+                                value: item.formatted_address,
+                                latitude: item.geometry.location.lat(),
+                                longitude: item.geometry.location.lng()
+                            }
+                        }));
+                    })
+                },
+                select: function(event, ui) {
+                    if(markers.length){
+                        $.each(markers, function(i, v){
+                            v.setMap(null);
+                        });
+                    }
+
+                    var location = new google.maps.LatLng(ui.item.latitude, ui.item.longitude),
+                        marker = _createMarker(map, {latLng: location});
+
+                    _setCenter(map, {latLng: location});
+                    map.setZoom(15);
                 }
             });
 		}
@@ -197,6 +234,13 @@
          *
          */
 		function _search(map, address) {
+
+            if(markers.length){
+                $.each(markers, function(i, v){
+                    v.setMap(null);
+                });
+            }
+
 			var geocoder = new google.maps.Geocoder();
 
 			geocoder.geocode({

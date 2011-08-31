@@ -3,11 +3,12 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <link rel="stylesheet" href="style/map.css" />
-    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false&language=cn&region=CN"></script>
     <script type="text/javascript" src="scripts/jquery-1.4.4.min.js"></script>
-    <script type="text/javascript" src="scripts/do.min.js"></script>
+    <script type="text/javascript" src="scripts/do.min.js" data-cfg-autoload="false"></script>
     <script type="text/javascript" charset="utf-8">
-        Do.add('map', {path: 'scripts/dui.map.js', type: 'js'});
+        Do.add('jquery-ui', {path: 'scripts/jquery-ui-1.8.16.custom.min.js', type: 'js'});
+        Do.add('map', {path: 'scripts/dui.map.js', type: 'js', requires: ['jquery-ui']});
     </script>
     <style type="text/css" media="screen">
         .map{margin-top:20px;}
@@ -53,6 +54,7 @@
 
 
             var map4 = dui.iMap.createMap($('div#map-4'), {searchControl: true});
+
         });
     </script>
 </body>
