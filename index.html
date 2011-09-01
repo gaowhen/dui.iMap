@@ -53,7 +53,20 @@
             });
 
 
-            var map4 = dui.iMap.createMap($('div#map-4'), {searchControl: true});
+            function searchCallback(map){
+                var marker = dui.iMap.createMarker(map),
+                    content = '<div><h3>你输入的地址在地图上找不到</h3><p>请重新输入或<a id="btn-manual-mark" href="#">手动标记</a></p></div>',
+                    infowindow = dui.iMap.infowindow(map, marker, content);
+                    dui.log(infowindow);
+
+                    infowindow.open(map, marker);
+                    dui.log($('#btn-manual-mark'));
+                    $('#btn-manual-mark').live('click', function(e){
+                        e.preventDefault();
+                        alert('So, what?');
+                    });
+            }
+            var map4 = dui.iMap.createMap($('div#map-4'), {searchControl: true, searchCallback: searchCallback});
 
         });
     </script>

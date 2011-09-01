@@ -49,7 +49,8 @@
 			scaleControl: true,
 			streetViewControl: false,
 			overviewMapControl: false,
-			searchControl: false
+			searchControl: false,
+            searchCallback: ''
 		},
 		centerDefault = {
 			lat: mapDefault.lat,
@@ -105,7 +106,7 @@
 
 			// 显示搜索控件
 			if (opt.searchControl) {
-				_customControlSearch(map);
+				_customControlSearch(map, opt.searchCallback);
 			}
 
 			return map;
@@ -172,7 +173,7 @@
          * 自定义搜索控件
          *
          */
-		function _customControlSearch(map) {
+		function _customControlSearch(map, callback) {
 			var $search = $('<div id="search-control"></div>'),
                 $searchUI = $('<div id="search-control-ui"></div>'),
                 $txt = $('<input type="text" name="search-txt" id="search-txt" />'),
@@ -184,18 +185,19 @@
 			map.controls[google.maps.ControlPosition.TOP_LEFT].push($search.get(0));
 			google.maps.event.addDomListener($btn.get(0), 'click', function() {
                 var address = $txt.val();
-                _search(map, address);
+                _search(map, address, callback);
             });
 
-//            $txt.bind('keydown', function(e){
-//                if(e.keyCode == '13'){
-//                    var address = $txt.val();
-//                    _search(map, address);
-//                }
-//            });
+            // 回车搜索
+            $txt.bind('keydown', function(e){
+                if(e.keyCode == '13'){
+                    var address = $txt.val();
+                    _search(map, address);
+                }
+            });
 
-            dui.log($txt);
-            $txt.autocomplete({
+            // 地址提示
+             $txt.autocomplete({
                 source: function(request, response) {
                     dui.log('source');
                     dui.log(request);
@@ -233,7 +235,7 @@
          * 搜索
          *
          */
-		function _search(map, address) {
+		function _search(map, address, callback) {
 
             if(markers.length){
                 $.each(markers, function(i, v){
@@ -256,7 +258,11 @@
                     } else {
                         // TODO
                         // 查找不到的处理
-                        alert("Geocode was not successful for the following reason: " + status);
+                        if(_isFunction(callback)){
+                            callback(map);
+                        }else{
+                            alert("难道你是火星人吗，在地球上没找到你要找的地方。");
+                        }
                     }
 			});
 		}
@@ -270,6 +276,8 @@
             google.maps.event.addListener(marker, 'click', function() {
                 infowindow.open(map, marker);
             });
+
+            return infowindow;
         }
 
 		return {
@@ -297,7 +305,10 @@
 			},
 			search: function(address) {
 				return _search(address);
-			}
+			},
+            infowindow: function(map, marker, content){
+                return _infowindow(map, marker, content);
+            }
 		};
 	})();
 
