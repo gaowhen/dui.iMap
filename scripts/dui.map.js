@@ -1,8 +1,10 @@
 /**
  * Author: gaocheng@douban.com
  *
- * TODO: 自定义搜索 control
- * TODO: 创建地图时，也可以只传入经纬度
+ * TODO 拖动 marker 后保存新位置
+ * TODO 封装手动标记 marker 插件
+ * TODO 拖动 marker 后在 infowindow 中显示地址
+ *
  *
  */
 
@@ -89,12 +91,14 @@
 				'height': opt.height
 			});
 
+            dui.log($ele);
 			opt.mapTypeId = google.maps.MapTypeId[opt.type];
 			var map = new google.maps.Map($ele.get(0), opt);
 
 			var latlng = new google.maps.LatLng(opt.lat, opt.lng);
 			map.setCenter(latlng);
 
+            dui.log('=========')
 			dui.log(arguments);
 			if (arguments.length === 3 && _isFunction(arguments[2])) {
 				dui.log(map);
@@ -163,6 +167,7 @@
                     break;
                 case 'drag':
                     // code
+                    google.maps.event.addListener(ele, 'dragend', handle);
                     break;
                 default:
                     // code
@@ -236,6 +241,7 @@
          *
          */
 		function _search(map, address, callback) {
+            dui.log('_search');
 
             if(markers.length){
                 $.each(markers, function(i, v){
@@ -245,6 +251,7 @@
 
 			var geocoder = new google.maps.Geocoder();
 
+            dui.log(address);
 			geocoder.geocode({
                     address: address
                 },
@@ -303,8 +310,8 @@
 			bind: function(map, events, handle) {
 				_bind(map, events, handle);
 			},
-			search: function(address) {
-				return _search(address);
+			search: function(map, address, callback) {
+				return _search(map, address, callback);
 			},
             infowindow: function(map, marker, content){
                 return _infowindow(map, marker, content);

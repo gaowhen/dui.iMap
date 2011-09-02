@@ -8,10 +8,13 @@
     <script type="text/javascript" src="scripts/do.min.js" data-cfg-autoload="false"></script>
     <script type="text/javascript" charset="utf-8">
         Do.add('jquery-ui', {path: 'scripts/jquery-ui-1.8.16.custom.min.js', type: 'js'});
-        Do.add('map', {path: 'scripts/dui.map.js', type: 'js', requires: ['jquery-ui']});
+        Do.add('dialog', {path: 'scripts/dialog.js', type: 'js'});
+        Do.add('dialog-css', {path: 'style/dialog.css', type: 'css'});
+        Do.add('map', {path: 'scripts/dui.map.js', type: 'js', requires: ['jquery-ui', 'dialog', 'dialog-css']});
     </script>
     <style type="text/css" media="screen">
         .map{margin-top:20px;}
+        .dui-dialog h3{margin:0;}
     </style>
     <title>dui.map</title>
 </head>
@@ -24,6 +27,9 @@
     <div id="map-3" class="map"></div>
     <h3>map 4</h3>
     <div id="map-4" class="map"></div>
+    <h3>map 5</h3>
+    <div id="map-manual" class="map"><a href="#">click</a></div>
+
     <script type="text/javascript" charset="utf-8">
         Do('map', function(){
             function callback(map){
@@ -55,7 +61,7 @@
 
             function searchCallback(map){
                 var marker = dui.iMap.createMarker(map),
-                    content = '<div><h3>你输入的地址在地图上找不到</h3><p>请重新输入或<a id="btn-manual-mark" href="#">手动标记</a></p></div>',
+                    content = '<div><h3 style="font-size:12px;font-weight:normal;">你输入的地址在地图上找不到</h3><p style="font-size:12px;">请重新输入或<a id="btn-manual-mark" href="#">手动标记</a></p></div>',
                     infowindow = dui.iMap.infowindow(map, marker, content);
                     dui.log(infowindow);
 
@@ -67,6 +73,54 @@
                     });
             }
             var map4 = dui.iMap.createMap($('div#map-4'), {searchControl: true, searchCallback: searchCallback});
+
+            Do('dialog', 'dialog-css', function(){
+                $.fn.imap = function(){
+                    this.manual = function(address, drag){
+                        $(this).bind('click', function(e){
+                            e.preventDefault();
+                            var content = '<div id="manual-mark-map"><div class="map-hd"><input type="text" class="search-txt" name="search-txt" /><input type="button" class="search-btn" value="search" /></div><div class="map-bd"><div class="map"></div></div><div class="map-ft"></div></div>',
+                                dlg = dui.Dialog({
+                                    title: '手动标注地点',
+                                    content: content
+                                }),
+                                handle = drag;
+
+                            var map = dui.iMap.createMap($('#manual-mark-map .map'), {searchControl: false}),
+                                marker = dui.iMap.createMarker(map, {draggable: true});
+
+                            var dragend = function(e){
+                                dui.log(e)
+                                var content = '<div><h3>' + $('#manual-mark-map .search-txt').val() + '</h3>save</div>',
+                                    infowindow = dui.iMap.infowindow(map, marker, content);
+                                    infowindow.open(map, marker);
+                                    dui.iMap.setCenter(map, {latLng: e.latLng});
+                                //alert('donnot be so tough');
+                            };
+
+                            dui.log(marker);
+                            dui.iMap.bind(marker, 'drag', dragend);
+
+                            dui.log(address);
+                            //dui.iMap.search(map, address, function(){});
+                            dlg.open();
+                            dlg.update();
+
+                            return false;
+                        });
+                    };
+
+                    return this;
+                };
+            });
+
+            var drag = function(map, marker){
+                var content = '<div>save</div>',
+                    infowindow = dui.iMap.infowindow(map, marker, content);
+                    infowindow.open(map, marker);
+                //alert('donnot be so tough');
+            };
+            $('#map-manual a').imap().manual('北京市朝阳区', drag);
 
         });
     </script>
