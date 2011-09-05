@@ -15,6 +15,8 @@
     <style type="text/css" media="screen">
         .map{margin-top:20px;}
         .dui-dialog h3{margin:0;}
+        .overlay{position:absolute;background-color:#EAEDEC;opacity:0.9;left:0;top:0;z-index:88;}
+        .dui-dialog{z-index:100;}
     </style>
     <title>dui.map</title>
 </head>
@@ -48,7 +50,7 @@
             });
 
             var map3 = dui.iMap.createMap($('div#map-3')),
-                marker3 = dui.iMap.createMarker(map3, {draggable: true, handleDrag: function(e){console.log(e)}}),
+                marker3 = dui.iMap.createMarker(map3, {draggable: true, handleDrag: function(e){dui.log(e)}}),
                 content = '<div>hello world! <a href="#" id="btn-click">click</a></div>';
 
             dui.iMap.infowindow(map3, marker3, content);
@@ -74,37 +76,76 @@
             }
             var map4 = dui.iMap.createMap($('div#map-4'), {searchControl: true, searchCallback: searchCallback});
 
-            Do('dialog', 'dialog-css', function(){
+            Do('jquery-ui', 'dialog', 'dialog-css', function(){
                 $.fn.imap = function(){
-                    this.manual = function(address, drag){
+
+                    this.manual = function(address){
                         $(this).bind('click', function(e){
+
                             e.preventDefault();
+
+                            // 遮罩
+                            $('body').append($('<div class="overlay"></div>'));
+                            $('div.overlay').css({'width': $(document).width(), 'height': $(document).height(), 'display': 'block'});
+
                             var content = '<div id="manual-mark-map"><div class="map-hd"><input type="text" class="search-txt" name="search-txt" /><input type="button" class="search-btn" value="search" /></div><div class="map-bd"><div class="map"></div></div><div class="map-ft"></div></div>',
                                 dlg = dui.Dialog({
                                     title: '手动标注地点',
                                     content: content
-                                }),
-                                handle = drag;
+                                });
 
-                            var map = dui.iMap.createMap($('#manual-mark-map .map'), {searchControl: false}),
-                                marker = dui.iMap.createMarker(map, {draggable: true});
+                            var map = dui.iMap.createMap($('#manual-mark-map .map'), {zoom: 16, searchControl: false}),
+                                marker = dui.iMap.createMarker(map, {draggable: true}),
+                                info= '<div><h3>' + $('#manual-mark-map .search-txt').val() + '</h3>save</div>',
+                                infowindow = dui.iMap.infowindow(map, marker, info);
 
                             var dragend = function(e){
-                                dui.log(e)
-                                var content = '<div><h3>' + $('#manual-mark-map .search-txt').val() + '</h3>save</div>',
-                                    infowindow = dui.iMap.infowindow(map, marker, content);
-                                    infowindow.open(map, marker);
-                                    dui.iMap.setCenter(map, {latLng: e.latLng});
-                                //alert('donnot be so tough');
+                                infowindow.open(map, marker);
+                                dui.iMap.setCenter(map, {latLng: e.latLng});
                             };
 
-                            dui.log(marker);
+                            // 拖拽事件
                             dui.iMap.bind(marker, 'drag', dragend);
 
-                            dui.log(address);
-                            //dui.iMap.search(map, address, function(){});
-                            dlg.open();
-                            dlg.update();
+                            $('#manual-mark-map .search-txt').autocomplete({
+                                appendTo: '.dui-dialog',
+                                source: function(request, response) {
+                                    var geocoder = new google.maps.Geocoder();
+
+                                    geocoder.geocode( {'address': request.term }, function(results, status) {
+                                        dui.log(results);
+                                        response($.map(results, function(item) {
+                                            return {
+                                                label:  item.formatted_address,
+                                                value: item.formatted_address,
+                                                latitude: item.geometry.location.lat(),
+                                                longitude: item.geometry.location.lng()
+                                            }
+                                        }));
+                                    })
+                                },
+                                select: function(event, ui) {
+                                    if(markers.length){
+                                        $.each(markers, function(i, v){
+                                            v.setMap(null);
+                                        });
+                                    }
+
+                                    var location = new google.maps.LatLng(ui.item.latitude, ui.item.longitude),
+                                        marker = dui.iMap.createMarker(map, {latLng: location});
+
+                                    dui.iMap.setCenter(map, {latLng: location});
+                                    map.setZoom(15);
+                                }
+                            });
+
+                            //
+                            dlg.node.find('.dui-dialog-close').bind('click', function(e){
+                                e.preventDefault();
+                                $('.overlay').remove();
+                            });
+
+                            dlg.open().update();
 
                             return false;
                         });
@@ -114,13 +155,7 @@
                 };
             });
 
-            var drag = function(map, marker){
-                var content = '<div>save</div>',
-                    infowindow = dui.iMap.infowindow(map, marker, content);
-                    infowindow.open(map, marker);
-                //alert('donnot be so tough');
-            };
-            $('#map-manual a').imap().manual('北京市朝阳区', drag);
+            $('#map-manual a').imap().manual('北京市朝阳区');
 
         });
     </script>

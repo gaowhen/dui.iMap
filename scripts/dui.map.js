@@ -202,7 +202,7 @@
             });
 
             // 地址提示
-             $txt.autocomplete({
+            $txt.autocomplete({
                 source: function(request, response) {
                     dui.log('source');
                     dui.log(request);
@@ -320,5 +320,42 @@
 	})();
 
 	window.dui = dui;
+
+    $.fn.imap = function(){
+        this.autocomplete = function(map){
+            $(this).autocomplete({
+                source: function(request, response) {
+                    var geocoder = new google.maps.Geocoder();
+
+                    geocoder.geocode( {'address': request.term }, function(results, status) {
+                        dui.log(results);
+                        response($.map(results, function(item) {
+                            return {
+                                label:  item.formatted_address,
+                                value: item.formatted_address,
+                                latitude: item.geometry.location.lat(),
+                                longitude: item.geometry.location.lng()
+                            }
+                        }));
+                    })
+                },
+                select: function(event, ui) {
+                    if(markers.length){
+                        $.each(markers, function(i, v){
+                            v.setMap(null);
+                        });
+                    }
+
+                    var location = new google.maps.LatLng(ui.item.latitude, ui.item.longitude),
+                        marker = dui.iMap.createMarker(map, {latLng: location});
+
+                    dui.iMap.setCenter(map, {latLng: location});
+                    map.setZoom(15);
+                }
+            });
+        };
+
+        return this;
+    };
 
 })(jQuery)
