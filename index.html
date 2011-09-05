@@ -84,9 +84,15 @@
 
                             e.preventDefault();
 
+                            var $doc = $(document),
+                                docHeight = $doc.height(),
+                                $win = $(window),
+                                winHeight = $win.height(),
+                                $html = $('html');
                             // 遮罩
+                            $html.height(winHeight).css({'overflow': 'hidden'}).scrollTop(docHeight - winHeight);
                             $('body').append($('<div class="overlay"></div>'));
-                            $('div.overlay').css({'width': $(document).width(), 'height': $(document).height(), 'display': 'block'});
+                            $('div.overlay').css({'width': $doc.width(), 'height': docHeight, 'display': 'block'});
 
                             var content = '<div id="manual-mark-map"><div class="map-hd"><input type="text" class="search-txt" name="search-txt" /><input type="button" class="search-btn" value="search" /></div><div class="map-bd"><div class="map"></div></div><div class="map-ft"></div></div>',
                                 dlg = dui.Dialog({
@@ -139,9 +145,24 @@
                                 }
                             });
 
+                            var $btn = dlg.node.find('.search-btn'),
+                                $txt = dlg.node.find('.search-txt');
+
+                            $btn.bind('click', function(){
+                                var address = $txt.val();
+                                dui.iMap.search(map, address);
+                            });
+
+                            $txt.bind('keyup', function(e){
+                                if(e.keyCode == 13){
+                                    $btn.trigger('click');
+                                }
+                            });
+
                             //
                             dlg.node.find('.dui-dialog-close').bind('click', function(e){
                                 e.preventDefault();
+                                $html.height(docHeight).css({'overflow': 'auto'}).scrollTop(docHeight - winHeight);
                                 $('.overlay').remove();
                             });
 
